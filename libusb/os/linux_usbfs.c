@@ -223,6 +223,7 @@ static int _get_usbfs_fd(struct libusb_device *dev, mode_t mode, int silent)
 		snprintf(path, PATH_MAX, "%s/%03d/%03d",
 			usbfs_path, dev->bus_number, dev->device_address);
 
+	usbi_dbg("open path:%s", path);
 	fd = _open(path, mode);
 	if (fd != -1)
 		return fd; /* Success */

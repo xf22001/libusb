@@ -23,8 +23,21 @@
 
 #include "libusb.h"
 
+#include <pthread.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 int done = 0;
 libusb_device_handle *handle = NULL;
+
+static void print_thread(const char *file, const char *func, int line)
+{
+	pid_t pid;
+	pthread_t tid;
+	pid = getpid();
+	tid = pthread_self();
+	printf("%s:%s:%d pid %u tid %u (0x%x)\n", file, func, line, (unsigned int) pid, (unsigned int) tid, (unsigned int) tid);
+}
 
 static int LIBUSB_CALL hotplug_callback(libusb_context *ctx, libusb_device *dev, libusb_hotplug_event event, void *user_data)
 {
@@ -35,6 +48,8 @@ static int LIBUSB_CALL hotplug_callback(libusb_context *ctx, libusb_device *dev,
 	(void)dev;
 	(void)event;
 	(void)user_data;
+
+	print_thread(__FILE__, __func__, __LINE__);
 
 	rc = libusb_get_device_descriptor(dev, &desc);
 	if (LIBUSB_SUCCESS != rc) {
@@ -65,6 +80,8 @@ static int LIBUSB_CALL hotplug_callback_detach(libusb_context *ctx, libusb_devic
 	(void)event;
 	(void)user_data;
 
+	print_thread(__FILE__, __func__, __LINE__);
+
 	printf ("Device detached\n");
 
 	if (handle) {
@@ -83,9 +100,11 @@ int main(int argc, char *argv[])
 	int product_id, vendor_id, class_id;
 	int rc;
 
-	vendor_id  = (argc > 1) ? (int)strtol (argv[1], NULL, 0) : 0x045a;
-	product_id = (argc > 2) ? (int)strtol (argv[2], NULL, 0) : 0x5005;
+	vendor_id  = (argc > 1) ? (int)strtol (argv[1], NULL, 0) : LIBUSB_HOTPLUG_MATCH_ANY;
+	product_id = (argc > 2) ? (int)strtol (argv[2], NULL, 0) : LIBUSB_HOTPLUG_MATCH_ANY;
 	class_id   = (argc > 3) ? (int)strtol (argv[3], NULL, 0) : LIBUSB_HOTPLUG_MATCH_ANY;
+
+	print_thread(__FILE__, __func__, __LINE__);
 
 	rc = libusb_init (NULL);
 	if (rc < 0)

@@ -158,6 +158,8 @@ static int usbi_hotplug_match_cb(struct libusb_context *ctx,
 	struct libusb_device *dev, libusb_hotplug_event event,
 	struct libusb_hotplug_callback *hotplug_cb)
 {
+	usbi_dbg("event:%x, vid:%x, pid:%x, class:%x", event, dev->device_descriptor.idVendor, dev->device_descriptor.idProduct, dev->device_descriptor.bDeviceClass);
+
 	if (!(hotplug_cb->flags & event)) {
 		return 0;
 	}
